@@ -36,10 +36,11 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # Permisos para Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+
 # Variables de entorno para producción
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Solo modifica el DocumentRoot en 000-default.conf para evitar conflictos de MPM
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 # Puerto expuesto
 EXPOSE 80
