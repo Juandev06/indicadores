@@ -1,9 +1,6 @@
-# Usa una imagen oficial de PHP con Apache
-
-# Imagen base PHP con Apache
 FROM php:8.2-apache
 
-# Instala dependencias del sistema y extensiones PHP necesarias para Laravel y paquetes comunes
+# Instala extensiones necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -15,33 +12,36 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libmcrypt-dev \
-    libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Habilita mod_rewrite
 RUN a2enmod rewrite
 
-# Instala Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-
-# Copia el proyecto Laravel (excepto public/) a /var/www
-COPY ./indicadores /var/www
-# Copia el contenido de public/ a /var/www/html
+# Copia solo el contenido de la app, NO archivos de configuración de Apache
+COPY ./indicadores/app /var/www/app
+COPY ./indicadores/bootstrap /var/www/bootstrap
+COPY ./indicadores/config /var/www/config
+COPY ./indicadores/database /var/www/database
 COPY ./indicadores/public /var/www/html
+COPY ./indicadores/resources /var/www/resources
+COPY ./indicadores/routes /var/www/routes
+COPY ./indicadores/storage /var/www/storage
+COPY ./indicadores/composer.json /var/www/composer.json
+COPY ./indicadores/composer.lock /var/www/composer.lock
+COPY ./indicadores/package.json /var/www/package.json
+COPY ./indicadores/package-lock.json /var/www/package-lock.json
+COPY ./indicadores/webpack.mix.js /var/www/webpack.mix.js
+COPY ./indicadores/artisan /var/www/artisan
+COPY ./indicadores/phpunit.xml /var/www/phpunit.xml
 
 WORKDIR /var/www
 
-# Instala dependencias de PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Permisos para Laravel
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Puerto expuesto
 EXPOSE 80
 
-# Comando de inicio
 CMD ["apache2-foreground"]
