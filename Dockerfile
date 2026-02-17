@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y \
 # Habilita mod_rewrite
 RUN a2enmod rewrite
 
-# Copia los archivos del proyecto
-COPY . /var/www/html
+# Copia los archivos del proyecto desde la carpeta indicadores
+COPY ./indicadores /var/www/html
 
 # Instala Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
