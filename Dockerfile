@@ -26,20 +26,19 @@ RUN a2enmod rewrite
 # Instala Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Copia los archivos del proyecto desde la carpeta indicadores
-COPY ./indicadores /var/www/html
-WORKDIR /var/www/html
+
+# Copia el proyecto Laravel (excepto public/) a /var/www
+COPY ./indicadores /var/www
+# Copia el contenido de public/ a /var/www/html
+COPY ./indicadores/public /var/www/html
+
+WORKDIR /var/www
 
 # Instala dependencias de PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Permisos para Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-
-# Variables de entorno para producción
-# Solo modifica el DocumentRoot en 000-default.conf para evitar conflictos de MPM
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Puerto expuesto
 EXPOSE 80
